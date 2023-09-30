@@ -24,8 +24,8 @@ def write():
         message = f'{nickname}: {input("")}'
         client.send(message.encode('ascii'))
 
-receive_tread = threading.Thread(target=receive())
-receive_tread.start()
+receive_thread = threading.Thread(target=receive)
+receive_thread.start()
 
-write_tread = threading.Thread(target=write())
-write_tread.start()
+write_thread = threading.Thread(target=write)
+write_thread.start()

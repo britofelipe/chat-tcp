@@ -1,11 +1,11 @@
 import threading
 import socket
 
-host = '127.0.0.1'
-port = 55123
+HOST = '127.0.0.1'
+PORT = 55123
 
 server = socket.socket(socket.AF_INET)
-server.bind((host, port))
+server.bind((HOST, PORT))
 server.listen()
 
 clients = []
@@ -50,3 +50,6 @@ def receive():
         # We need to process multiple messages at a time
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
+
+print(f"Server is listening at port {PORT}")
+receive()

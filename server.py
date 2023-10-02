@@ -37,9 +37,24 @@ def receive():
         # Accept clients all the time
         client, address = server.accept()
         print(f"Connected with {str(address)}")
-
+        
+        #RECUSAR SE TIVERMOS MAIS DE 4 CLIENTES 
+        tamanho = len(clients)
+        if tamanho >= 1:
+            client.send("REFUSE SIZE".encode('ascii'))
+            client.close()
+            break    
+        
         client.send("NICK".encode('ascii'))
-        nickname = client.recv(1024).decode('ascii')
+        nickname = client.recv(1024).decode('ascii')    
+        
+        #SOLICITAR NOVO NICK SE JÁ HOUVER UM USUÁRIO COM UM IGUAL
+        if len(nicknames) > 0:
+            for nick in nicknames:
+                if nickname == nick:
+                    client.send("REFUSE NICK".encode('ascii'))
+                    nickname = client.recv(1024).decode('ascii') 
+                    
         nicknames.append(nickname)
         clients.append(client)
 

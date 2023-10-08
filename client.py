@@ -31,7 +31,7 @@ def receive():
 
 def write():
     while True:
-        text = input("You: ")
+        text = input("")
 
         if(text == '/JOIN'):
             message = '/JOIN'

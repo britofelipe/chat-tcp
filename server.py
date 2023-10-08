@@ -12,16 +12,33 @@ server.listen()
 clients = []
 nicknames = []
 
+commands = {
+    '/JOIN',
+    '/NICK',
+    '/USERS',
+    '/EXIT'
+}
+
 # BROADCAST: Sends message to client
 def broadcast(message, sender):
     for client in clients:
         if client != sender:
             client.send(message)
 
+def send_users(client):
+    users = 'Connected users: ' + ', '.join(nicknames)
+    client.send(users.encode('ascii'))
+
 def handle(client):
     while True:
         try:
-            message = client.recv(1024)
+            message = client.recv(1024).decode('ascii')
+
+            if (message in commands):
+                if(message == '/JOIN'):
+                    client.send("You are already in the server! Did you mean '/EXIT'?".encode('ascii'))
+                elif message == '/USERS':
+                    send_users(client)
             broadcast(message, client)
         except:
             index = clients.index(client)

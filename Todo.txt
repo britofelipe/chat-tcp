@@ -4,3 +4,6 @@
 
 - LIMITAR A 4 CONEXÕES
     CONTAR A LISTA A CADA NOVA CONEXÃO E RECUSAR
+
+- Adicionar "Message: " antes do input do usuário
+- Selecionar a porta que quer conectar

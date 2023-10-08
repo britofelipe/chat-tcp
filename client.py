@@ -20,8 +20,14 @@ def receive():
     while True:
         try:
             message = client.recv(1024).decode('ascii')
+            if not message:
+                client.close()
+                break
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
+            elif message == 'Exiting|':
+                client.close()
+                break
             else:
                 print(message)
         except:
@@ -31,6 +37,10 @@ def receive():
 
 def write():
     while True:
+        if stop_thread:
+            client.close()
+            break
+
         text = input("")
 
         if(text == '/JOIN'):
@@ -43,8 +53,11 @@ def write():
             message = '/USERS'
             client.send(message.encode('ascii'))
         elif(text == '/EXIT'):
-            message = '/EXIT'
-            client.send(message.encode('ascii'))
+            try:
+                client.send(text.encode('ascii'))
+                break
+            except:
+                print('ERROR: Connection went wrong')
         else: 
             message = f'{nickname}: {text}'
             client.send(message.encode('ascii'))

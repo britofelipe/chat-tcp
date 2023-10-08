@@ -39,13 +39,25 @@ def handle(client):
                     client.send("You are already in the server! Did you mean '/EXIT'?".encode('ascii'))
                 elif message == '/USERS':
                     send_users(client)
-            broadcast(message, client)
+                elif (message == '/EXIT'): 
+                    try:
+                        message = 'Exiting|'
+                        client.send(message.encode('ascii'))
+                        index = clients.index(client)
+                        clients.remove(client)
+                        client.close()
+                        nickname = nicknames[index]
+                        broadcast(f'{nickname} left the chat'.encode('ascii'), client)
+                        nicknames.remove(nickname)
+                        break
+                    except:
+                        print('Connection Error')
+            else:
+                broadcast(message, client)
         except:
             index = clients.index(client)
-            # Remove client
             clients.remove(client)
             client.close()
-            # Remove nickname
             nickname = nicknames[index]
             broadcast(f'{nickname} left the chat'.encode('ascii'), client)
             nicknames.remove(nickname)

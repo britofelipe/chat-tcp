@@ -36,7 +36,7 @@ def write():
         if stop_thread:
             client.close()
             break
-        text = input("")
+        text = input("You: ")
         sendMessage = f'{nickname}: {text}'
         client.send(sendMessage.encode('ascii'))
 

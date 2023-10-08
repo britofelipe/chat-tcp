@@ -31,26 +31,31 @@ def handle(client):
             message = client.recv(1024).decode('ascii')
 
             if message.split(": ")[1] in commands:
-                if (message == '/JOIN'):
-                    print("You are already in the server! Did you mean '/EXIT'?")
-                elif message.startswith('/NICK'):
-                    try:
-                        new_nick = message.split()[1]
-                        index = clients.index(client)
-                        old_nick = nicknames[index]
-                        nicknames[index] = new_nick
-                        client.send(f"Nickname changed to {new_nick}".encode('ascii'))
-                        broadcast(f'{old_nick} has changed to {new_nick}'.encode('ascii'), client)
-                    except:
-                        print("Failed to change nickname")
-                elif (message == '/USERS'): 
+                command = message.split(": ")[1]
+                if (command == '/JOIN'):
+                    client.send("You are already in the server! Did you mean '/EXIT'?")
+                elif command.startswith('/NICK'):
+                    if(len(clients) >= 4):
+                        client.send("REFUSE SIZE".encode('ascii'))
+                        client.close()
+                    else:
+                        try:
+                            new_nick = message.split()[1]
+                            index = clients.index(client)
+                            old_nick = nicknames[index]
+                            nicknames[index] = new_nick
+                            client.send(f"Nickname changed to {new_nick}".encode('ascii'))
+                            broadcast(f'{old_nick} has changed to {new_nick}'.encode('ascii'), client)
+                        except:
+                            print("Failed to change nickname")
+                elif (command == '/USERS'): 
                     try: 
                         users_list = ', '.join(nicknames)
                         client.send(users_list.encode('ascii'))
                     except:
-                        print("Failed to show all users")
+                        ("Failed to show all users")
                         break
-                elif (message == '/EXIT'): 
+                elif (command == '/EXIT'): 
                     try:
                         message = 'Exiting|'
                         client.send(message.encode('ascii'))

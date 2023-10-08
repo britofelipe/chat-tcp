@@ -3,23 +3,28 @@ import threading
 
 nickname = input("Enter a nickname: ")
 stop_thread = False
+message = ''
 
+recvID = 0
+wrtID = 0
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', 55124))
 
-def is_command(message, command):
-    
-    if message.startswith('/'):
-      if message.find(command) != -1:
-          return True
-      else:
-          return False
+def is_command(message, command, size = 0):
+    if '/' in message[0]:    
+        if command in message[0:10]:
+            return True
 
 def receive():
+    global stop_thread
+    global message
     while True:
-        global stop_thread
+        
         try:
             message = client.recv(1024)
+            if not message:
+                client.close()
+                break
             message = str(message, 'ascii')
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
@@ -28,12 +33,17 @@ def receive():
                 if message == 'REFUSE NICK':
                     print('Someone with that nickname is already connected, please send another one. Type anything to proceed\n')
                     client.close()
-                    stop_thread = True
+                    # stop_thread = True
+                    break
                 
             elif message == 'REFUSE SIZE': 
                 print('Conection refused, too many users on the server')
                 client.close()
                 stop_thread = True
+                
+            elif message == 'Exiting|':
+                client.close()
+                break
                 
             # elif message == 'OK':
             #     pass
@@ -46,30 +56,49 @@ def receive():
             break
 
 def write():
+    global nickname
+    global message
+    
     while True:
         if stop_thread:
             client.close()
             break
         
-        text = input(f"LOCAL: {nickname}: ")
+        text = input("")
         
-        # if is_command(text, '/NICK'):
-        # if is_command(text, '/NICK'):
-        #     if len(text) > 6 and text[6] == " ":
-        #         client.send(text.enconde('ascii'))
+        if is_command(text, '/NICK'):
+            try:
+                if text[5] == " " and text[6] != None:
+                    client.send(text.encode('ascii'))
+                    nickname = text[6:]
+            except IndexError:
+                print('ERROR: Faulting characters')
+            except:
+                print('ERROR: Connection went wrong')
             
-        # elif is_command(text, '/USUARIOS'):
+        elif is_command(text, '/USUARIOS'):
+            try:
+                client.send(text.encode('ascii'))
+            except:
+                print('ERROR: Connection went wrong')
         
-        # elif is_command(text, '/SAIR'):
+        elif is_command(text, '/SAIR'):
+            try:
+                client.send(text.encode('ascii'))
+                while message != 'Exiting|':
+                    pass
+                print('Got out')
+            except:
+                print('ERROR: Connection went wrong')
             
-        # else:    
-            #message = f'{nickname}: {text}'
-        message = (f'{nickname}: {text}')
-        client.send(message.encode('ascii'))
+        else:
+            send = (f'{nickname}: {text}')
+            client.send(send.encode('ascii'))
 
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
+
 
 write_thread = threading.Thread(target=write)
 write_thread.start()

@@ -22,8 +22,6 @@ def receive():
             message = client.recv(1024).decode('ascii')
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
-                message = client.recv(1024).decode('ascii')
-                print("All ready, type anything to the chat")
             else:
                 print(message)
         except:
@@ -33,16 +31,26 @@ def receive():
 
 def write():
     while True:
-        if stop_thread:
-            client.close()
-            break
         text = input("You: ")
-        sendMessage = f'{nickname}: {text}'
-        client.send(sendMessage.encode('ascii'))
+
+        if(text == '/JOIN'):
+            message = '/JOIN'
+            client.send(message.encode('ascii'))
+        elif(text == '/NICK'):
+            message = '/NICK'
+            client.send(message.encode('ascii'))
+        elif(text == '/USERS'):
+            message = '/USERS'
+            client.send(message.encode('ascii'))
+        elif(text == '/EXIT'):
+            message = '/EXIT'
+            client.send(message.encode('ascii'))
+        else: 
+            message = f'{nickname}: {text}'
+            client.send(message.encode('ascii'))
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
-

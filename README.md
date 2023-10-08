@@ -1,26 +1,41 @@
 # chat-tcp
 A python implementation of a 4-person chat using tcp
 
-## SERVER.py
+## Server.py
+
+### list_to_string(list)
+
+- Transforms a python list into a string, so we can send the elements via socket.
 
 ### is_command(message, command, size=0)
 
-- Função utilizada para verificar se a mensagem enviada é um comando especificado pela plataforma. 
+- Verifies if the message is a specified command on the platform.
+- Size seria para uma implementação futura.
 
 ### broadcast(message, client)
 
-- Função responsável por enviar uma mensagem a todos os clientes conectados, a exceção do cliente que enviou a própria mensagem
-
+- Sends the message to all clients connected, except for the sender.
 
 ### handle(client)
 
-- Essa função é executada em uma thread separada para cada cliente
-- Responsável por lidar com a recepção de mensagens do cliente e execução das ações apropriadas com base nas mensagens recebidas
+- Allows the connection of various clients, by creating a thread for each one of them.
+- Handles the reception of messages and treats them accordingly, all the ifs are referent to the platform commands and error treatments.
 
 ### receive()
 
-- Aceita novas conexões de clientes, inicia um novo thread para lidar com cada cliente e realiza verificações e configurações iniciais.
+- Accept new client connections, making the initial security checks, initiating a new handle thread for each client.
 
-### Inicialização
+## Client.py
 
-- O servidor começa a ouvir as conexões e chama a função receive
+### is_command(message, command, size=0)
+
+- Same command as in the server.
+
+### receive()
+
+- Listens the server messages and makes the correct treatment.
+
+### write()
+
+- Keeps asking for keyboard inputs and lets the user comunicate with the server.
+- Treats the delivery of the commands, avoiding miscomunication.

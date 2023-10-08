@@ -22,6 +22,7 @@ def receive():
             message = client.recv(1024).decode('ascii')
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
+                message = client.recv(1024).decode('ascii')
                 print("All ready, type anything to the chat")
             else:
                 print(message)
@@ -32,8 +33,12 @@ def receive():
 
 def write():
     while True:
-        message = f'{nickname}: {input("")}'
-        client.send(message.encode('ascii'))
+        if stop_thread:
+            client.close()
+            break
+        text = input("")
+        sendMessage = f'{nickname}: {text}'
+        client.send(sendMessage.encode('ascii'))
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()

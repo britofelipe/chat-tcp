@@ -11,7 +11,6 @@ server.listen()
 clients = []
 nicknames = []
         
-
 def is_command(message, command, size = 0):
     if '/' in message[0]:    
         if command in message[0:10]:
@@ -82,7 +81,7 @@ def receive():
         
         #RECUSAR SE TIVERMOS MAIS DE 4 CLIENTES 
         tamanho = 0
-        if tamanho >= 2:
+        if tamanho >= 4:
             client.send("REFUSE SIZE".encode('ascii'))
             client.close()
             break    

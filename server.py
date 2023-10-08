@@ -12,13 +12,6 @@ server.listen()
 clients = []
 nicknames = []
 
-commands = {
-    '/JOIN',
-    '/NICK',
-    '/USERS',
-    '/EXIT'
-}
-
 # BROADCAST: Sends message to client
 def broadcast(message, sender):
     if not isinstance(message, str):
@@ -48,22 +41,43 @@ def close_client(client):
     broadcast(f'{nickname} left the chat'.encode('ascii'), client)
     nicknames.remove(nickname)
 
+def check_size(client):
+    if(len(clients) >= MAX_USERS):
+        client.send("REFUSE SIZE".encode('ascii'))
+        client.close()
+        return False
+    else:
+        return True
+
+def change_nick(client, new_nick):
+    index = clients.index(client)
+    old_nick = nicknames[index]
+    nicknames[index] = new_nick
+    client.send(f"Nickname changed to {new_nick}".encode('ascii'))
+    broadcast(f'{old_nick} has changed to {new_nick}'.encode('ascii'), client)
+
 def handle(client):
     while True:
         try:
             message = client.recv(1024).decode('ascii')
+            print(message)
 
-            if (message in commands):
-                if(message == '/JOIN'):
-                    already_joined(client)
-                elif message == '/USERS':
-                    send_users(client)
-                elif (message == '/EXIT'): 
-                    try:
-                        close_client(client)
-                        break
-                    except Exception as e:
-                        print(f"Error in exiting client: {e}")
+            if(message == '/JOIN'):
+                already_joined(client)
+            elif message == '/USERS':
+                send_users(client)
+            elif (message[0:5] == '/NICK'):
+                try:
+                    new_nick = message.split()[1]
+                    change_nick(client, new_nick)
+                except Exception as e:
+                    print(f"Error in changing client nick: {e}")
+            elif (message == '/EXIT'): 
+                try:
+                    close_client(client)
+                    break
+                except Exception as e:
+                    print(f"Error in exiting client: {e}")
             else:
                 broadcast(message, client)
         except Exception as e:
@@ -73,7 +87,6 @@ def handle(client):
 
 def receive():
     while True:
-        # Accept clients all the time
         client, address = server.accept()
         print(f"Connected with {str(address)}")
 
@@ -87,7 +100,6 @@ def receive():
         client.send('Connected to the server| '.encode('ascii'))
         client.send('Write your first message: '.encode('ascii'))
 
-        # We need to process multiple messages at a time
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 

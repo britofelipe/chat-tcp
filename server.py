@@ -2,7 +2,7 @@ import threading
 import socket
 
 HOST = '127.0.0.1'
-PORT = 55123
+PORT = 55124
 
 server = socket.socket(socket.AF_INET)
 server.bind((HOST, PORT))
@@ -10,7 +10,7 @@ server.listen()
 
 clients = []
 nicknames = []
-        
+
 def is_command(message, command, size = 0):
     if '/' in message[0]:    
         if command in message[0:10]:
@@ -24,6 +24,7 @@ def broadcast(message, client):
         if user != client:
             user.send(message.encode('ascii'))
 
+# HANDLE: Checks messages from clients
 def handle(client):
     while True:
         try:
@@ -73,6 +74,7 @@ def handle(client):
             nicknames.remove(nickname)
             break
 
+# RECEIVE:
 def receive():
     while True:
         # Accept clients all the time
@@ -81,7 +83,7 @@ def receive():
         
         #RECUSAR SE TIVERMOS MAIS DE 4 CLIENTES 
         tamanho = 0
-        if tamanho >= 4:
+        if tamanho >= 2:
             client.send("REFUSE SIZE".encode('ascii'))
             client.close()
             break    

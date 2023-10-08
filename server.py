@@ -21,13 +21,32 @@ commands = {
 
 # BROADCAST: Sends message to client
 def broadcast(message, sender):
+    if not isinstance(message, str):
+        message = str(message, 'ascii')
     for client in clients:
         if client != sender:
-            client.send(message)
+            try:
+                client.send(message.encode('ascii'))
+            except Exception as e:
+                print(f"Error in sending message: {e}")
+                close_client(client)
+
+def already_joined(client):
+    client.send("You are already in the server! Did you mean '/EXIT'?".encode('ascii'))
 
 def send_users(client):
     users = 'Connected users: ' + ', '.join(nicknames)
     client.send(users.encode('ascii'))
+
+def close_client(client):
+    message = 'Exiting|'
+    client.send(message.encode('ascii'))
+    index = clients.index(client)
+    clients.remove(client)
+    client.close()
+    nickname = nicknames[index]
+    broadcast(f'{nickname} left the chat'.encode('ascii'), client)
+    nicknames.remove(nickname)
 
 def handle(client):
     while True:
@@ -36,31 +55,20 @@ def handle(client):
 
             if (message in commands):
                 if(message == '/JOIN'):
-                    client.send("You are already in the server! Did you mean '/EXIT'?".encode('ascii'))
+                    already_joined(client)
                 elif message == '/USERS':
                     send_users(client)
                 elif (message == '/EXIT'): 
                     try:
-                        message = 'Exiting|'
-                        client.send(message.encode('ascii'))
-                        index = clients.index(client)
-                        clients.remove(client)
-                        client.close()
-                        nickname = nicknames[index]
-                        broadcast(f'{nickname} left the chat'.encode('ascii'), client)
-                        nicknames.remove(nickname)
+                        close_client(client)
                         break
-                    except:
-                        print('Connection Error')
+                    except Exception as e:
+                        print(f"Error in exiting client: {e}")
             else:
                 broadcast(message, client)
-        except:
-            index = clients.index(client)
-            clients.remove(client)
-            client.close()
-            nickname = nicknames[index]
-            broadcast(f'{nickname} left the chat'.encode('ascii'), client)
-            nicknames.remove(nickname)
+        except Exception as e:
+            print(f"Error in handling client: {e}")
+            close_client(client)
             break
 
 def receive():

@@ -32,7 +32,7 @@ def send_users(client):
     client.send(users.encode('ascii'))
 
 def close_client(client):
-    message = 'Exiting|'
+    message = 'EXITING'
     client.send(message.encode('ascii'))
     index = clients.index(client)
     clients.remove(client)
@@ -41,26 +41,37 @@ def close_client(client):
     broadcast(f'{nickname} left the chat'.encode('ascii'), client)
     nicknames.remove(nickname)
 
-def check_size(client):
-    if(len(clients) >= MAX_USERS):
+def accept_or_refuse_client(client, nickname):
+    if len(clients) >= MAX_USERS:
         client.send("REFUSE SIZE".encode('ascii'))
         client.close()
         return False
+    elif nickname in nicknames:
+        client.send("REFUSE NICK".encode('ascii'))
+        client.close()
+        return False
     else:
+        clients.append(client)
+        nicknames.append(nickname)
+        broadcast(f'{nickname} joined the chat|'.encode('ascii'), client)
         return True
 
 def change_nick(client, new_nick):
+    if new_nick in nicknames:
+        client.send('NICKNAME IN USE|'.encode('ascii'))
+        return
+
     index = clients.index(client)
     old_nick = nicknames[index]
     nicknames[index] = new_nick
-    client.send(f"Nickname changed to {new_nick}".encode('ascii'))
-    broadcast(f'{old_nick} has changed to {new_nick}'.encode('ascii'), client)
+    notification = f'NICKNAME CHANGED TO {new_nick}|'
+    client.send(notification.encode('ascii'))
+    broadcast(f'{old_nick} changed their nickname to {new_nick}|', client)
 
 def handle(client):
     while True:
         try:
             message = client.recv(1024).decode('ascii')
-            print(message)
 
             if(message == '/JOIN'):
                 already_joined(client)
@@ -92,16 +103,11 @@ def receive():
 
         client.send("NICK".encode('ascii'))
         nickname = client.recv(1024).decode('ascii')
-        nicknames.append(nickname)
-        clients.append(client)
 
-        print(f'Nickname of the client is {nickname}')
-        broadcast(f'{nickname} joined the chat|'.encode('ascii'), client)
-        client.send('Connected to the server| '.encode('ascii'))
-        client.send('Write your first message: '.encode('ascii'))
-
-        thread = threading.Thread(target=handle, args=(client,))
-        thread.start()
+        if accept_or_refuse_client(client, nickname):
+            print(f'Nickname of the client is {nickname}')
+            thread = threading.Thread(target=handle, args=(client,))
+            thread.start()
 
 print(f"Server is listening at port {PORT}")
 receive()

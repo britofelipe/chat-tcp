@@ -20,25 +20,37 @@ nickname = input("Enter a nickname: ")
 stop_thread = False
 
 def receive():
+    global nickname
     while True:
         try:
             message = client.recv(1024).decode('ascii')
-            if not message:
-                client.close()
-                break
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
-            elif message == 'Exiting|':
+            elif message.startswith('NICKNAME CHANGED TO '):
+                new_nick = message[len('NICKNAME CHANGED TO '):].strip('| ')
+                nickname = new_nick
+                print(f"Your nickname has been changed to {new_nick}")
+            elif message == 'EXITING':
+                print("You have left the chat.")
+                client.close()
+                break
+            elif message == 'REFUSE SIZE':
+                print('Connection refused, too many users on the server.')
+                client.close()
+                break
+            elif message == 'REFUSE NICK':
+                print('Connection refused, nickname is already in use.')
                 client.close()
                 break
             else:
                 print(message)
-        except:
-            print("An error occurred!")
+        except Exception as e:
+            print(f"An error occurred: {e}")
             client.close()
             break
 
 def write():
+    global nickname
     while True:
         if stop_thread:
             client.close()

@@ -1,17 +1,14 @@
 import socket
 import threading
 
-# entry = ''
-# while(entry != "/JOIN"):
-#     entry = input("Please write /JOIN to enter the chat: ")
-#     if(entry == "/JOIN"):
-#         break
+entry = ''
+while(entry != "/JOIN"):
+    entry = input("Please write /JOIN to enter the chat: ")
+    if(entry == "/JOIN"):
+        break
 
-# host = input("Please enter your HOST: ")
-# port = int(input("Please enter your PORT: "))
-
-host = '127.0.0.1'
-port = 55123
+host = input("Please enter your HOST: ")
+port = int(input("Please enter your PORT: "))
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((host, port))
